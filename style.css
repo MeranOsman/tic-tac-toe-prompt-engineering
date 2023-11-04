@@ -3,24 +3,27 @@ body {
     font-family: 'Open Sans', sans-serif;
     margin: 0;
     color: white;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
 h1 {
     text-align: center;
+    text-decoration: underline;
 }
 
 #content {
-    margin-top: 300px;
+    margin-top: 110px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
 }
 
-/* Set white border-color and thicker table borders */
 table {
     border-collapse: collapse;
-    /* Fix typo: should be 'collapse', not 'coll' */
 }
 
 td {
@@ -80,4 +83,23 @@ button {
 
 button:hover {
     background-color: #96cadd;
+}
+
+#current-player {
+    margin-top: 80px;
+    text-align: center;
+    padding: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.3);
+    width: 200px;
+    color: rgb(0, 176, 239);
+}
+
+#current-player.player-one {
+    color: rgb(0, 176, 239);
+}
+
+#current-player.player-two {
+    color: rgb(255, 192, 0);
 }

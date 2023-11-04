@@ -26,7 +26,7 @@ function init() {
 
 function render() {
     const contentDiv = document.getElementById('content');
-    // Generate table HTML
+
     let tableHtml = '<table>';
     for (let i = 0; i < 3; i++) {
         tableHtml += '<tr>';
@@ -43,12 +43,12 @@ function render() {
         tableHtml += '</tr>';
     }
     tableHtml += '</table>';
-    // Set table HTML to contentDiv
+
     contentDiv.innerHTML = tableHtml;
 }
 
 
-function restartGame(){
+function restartGame() {
     fields = [
         null,
         null,
@@ -73,8 +73,15 @@ function handleClick(cell, index) {
             const winCombination = getWinningCombination();
             drawWinningLine(winCombination);
         }
+
+        const currentPlayerElement = document.getElementById('current-player');
+        currentPlayerElement.textContent = currentPlayer === 'circle' ? 'Spieler Eins' : 'Spieler Zwei';
+
+        currentPlayerElement.className = currentPlayer === 'circle' ? 'player-one' : 'player-two';
     }
 }
+
+
 
 
 function isGameFinished() {
@@ -130,19 +137,19 @@ function generateCrossSVG() {
 function drawWinningLine(combination) {
     const lineColor = '#ffffff';
     const lineWidth = 5;
-  
+
     const startCell = document.querySelectorAll(`td`)[combination[0]];
     const endCell = document.querySelectorAll(`td`)[combination[2]];
     const startRect = startCell.getBoundingClientRect();
     const endRect = endCell.getBoundingClientRect();
-  
+
     const contentRect = document.getElementById('content').getBoundingClientRect();
-  
+
     const lineLength = Math.sqrt(
-      Math.pow(endRect.left - startRect.left, 2) + Math.pow(endRect.top - startRect.top, 2)
+        Math.pow(endRect.left - startRect.left, 2) + Math.pow(endRect.top - startRect.top, 2)
     );
     const lineAngle = Math.atan2(endRect.top - startRect.top, endRect.left - startRect.left);
-  
+
     const line = document.createElement('div');
     line.style.position = 'absolute';
     line.style.width = `${lineLength}px`;
@@ -153,4 +160,4 @@ function drawWinningLine(combination) {
     line.style.transform = `rotate(${lineAngle}rad)`;
     line.style.transformOrigin = `top left`;
     document.getElementById('content').appendChild(line);
-  }
+}
