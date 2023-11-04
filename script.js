@@ -9,141 +9,133 @@ let fields = [
     null,
     null,
 ];
-
+const WINNING_COMBINATIONS = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // horizontal
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // vertical
+    [0, 4, 8], [2, 4, 6], // diagonal
+];
 let currentPlayer = 'circle';
-
 function init() {
     render();
 }
-
 function render() {
-    const content = document.getElementById('content');
-    const table = document.createElement('table');
-
+    const contentDiv = document.getElementById('content');
+    // Generate table HTML
+    let tableHtml = '<table>';
     for (let i = 0; i < 3; i++) {
-        const row = document.createElement('tr');
+        tableHtml += '<tr>';
         for (let j = 0; j < 3; j++) {
-            const cell = document.createElement('td');
             const index = i * 3 + j;
-
+            let symbol = '';
             if (fields[index] === 'circle') {
-                const svg = generateAnimatedCircleSVG();
-                cell.appendChild(svg);
+                symbol = generateCircleSVG();
             } else if (fields[index] === 'cross') {
-                const svg = generateAnimatedCrossSVG();
-                cell.appendChild(svg);
-            } else {
-                cell.textContent = '';
+                symbol = generateCrossSVG();
             }
-
-            cell.onclick = () => handleCellClick(cell, index); // Füge den onclick-Event hinzu
-            row.appendChild(cell);
+            tableHtml += `<td onclick="handleClick(this, ${index})">${symbol}</td>`;
         }
-        table.appendChild(row);
+        tableHtml += '</tr>';
     }
-
-    content.innerHTML = '';
-    content.appendChild(table);
+    tableHtml += '</table>';
+    // Set table HTML to contentDiv
+    contentDiv.innerHTML = tableHtml;
 }
 
-function handleCellClick(cell, index) {
+function restartGame(){
+    fields = [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+    ];
+    render();
+}
+
+function handleClick(cell, index) {
     if (fields[index] === null) {
         fields[index] = currentPlayer;
-
-        if (currentPlayer === 'circle') {
-            cell.innerHTML = generateAnimatedCircleSVG().outerHTML;
-            currentPlayer = 'cross';
-        } else {
-            cell.innerHTML = generateAnimatedCrossSVG().outerHTML;
-            currentPlayer = 'circle';
+        cell.innerHTML = currentPlayer === 'circle' ? generateCircleSVG() : generateCrossSVG();
+        cell.onclick = null;
+        currentPlayer = currentPlayer === 'circle' ? 'cross' : 'circle';
+        if (isGameFinished()) {
+            const winCombination = getWinningCombination();
+            drawWinningLine(winCombination);
         }
-
-        cell.onclick = null; // Entferne den Eventlistener, um erneutes Klicken zu verhindern
     }
 }
-
-
-function generateAnimatedCircleSVG() {
-    const svgWidth = 70;
-    const svgHeight = 70;
-    const circleColor = "#00B0EF";
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", svgWidth);
-    svg.setAttribute("height", svgHeight);
-
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", svgWidth / 2);
-    circle.setAttribute("cy", svgHeight / 2);
-    circle.setAttribute("r", 0);
-    circle.setAttribute("fill", "transparent");
-    circle.setAttribute("stroke", circleColor);
-    circle.setAttribute("stroke-width", "4");
-
-    const animation = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-    animation.setAttribute("attributeName", "r");
-    animation.setAttribute("from", 0);
-    animation.setAttribute("to", svgWidth / 2 - 2);
-    animation.setAttribute("dur", "125ms");
-    animation.setAttribute("begin", "0s");
-    animation.setAttribute("fill", "freeze");
-    animation.setAttribute("repeatCount", "0");
-
-    circle.appendChild(animation);
-    svg.appendChild(circle);
-
-    return svg;
+function isGameFinished() {
+    return fields.every((field) => field !== null) || getWinningCombination() !== null;
 }
 
-
-function generateAnimatedCrossSVG() {
-    const svgWidth = 70;
-    const svgHeight = 70;
-    const crossColor = "#FFC000";
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("width", svgWidth);
-    svg.setAttribute("height", svgHeight);
-
-    const line1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line1.setAttribute("x1", 0);
-    line1.setAttribute("y1", 0);
-    line1.setAttribute("x2", svgWidth);
-    line1.setAttribute("y2", svgHeight);
-    line1.setAttribute("stroke", crossColor);
-    line1.setAttribute("stroke-width", "4");
-
-    const line2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line2.setAttribute("x1", svgWidth);
-    line2.setAttribute("y1", 0);
-    line2.setAttribute("x2", 0);
-    line2.setAttribute("y2", svgHeight);
-    line2.setAttribute("stroke", crossColor);
-    line2.setAttribute("stroke-width", "4");
-
-    const animation1 = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-    animation1.setAttribute("attributeName", "stroke-dasharray");
-    animation1.setAttribute("from", "0, 150");
-    animation1.setAttribute("to", "150, 0");
-    animation1.setAttribute("dur", "200ms");
-    animation1.setAttribute("begin", "0s");
-    animation1.setAttribute("repeatCount", "1");
-    animation1.setAttribute("end", "indefinite");
-
-    const animation2 = document.createElementNS("http://www.w3.org/2000/svg", "animate");
-    animation2.setAttribute("attributeName", "stroke-dasharray");
-    animation2.setAttribute("from", "0, 150");
-    animation2.setAttribute("to", "150, 0");
-    animation2.setAttribute("dur", "200ms");
-    animation2.setAttribute("begin", "0s");
-    animation2.setAttribute("repeatCount", "1");
-    animation2.setAttribute("end", "indefinite");
-
-    line1.appendChild(animation1);
-    line2.appendChild(animation2);
-
-    svg.appendChild(line1);
-    svg.appendChild(line2);
-
-    return svg;
+function getWinningCombination() {
+    for (let i = 0; i < WINNING_COMBINATIONS.length; i++) {
+        const [a, b, c] = WINNING_COMBINATIONS[i];
+        const [a, b, c] = WINNING_COMBINATIONS[i]; // [0, 1, 2]
+        if (fields[a] === fields[b] && fields[b] === fields[c] && fields[a] !== null) {
+            return WINNING_COMBINATIONS[i];
+        }
+    }
+    return null;
 }
+function generateCircleSVG() {
+    const color = '#00B0EF';
+    const width = 70;
+    const height = 70;
+    return `<svg width="${width}" height="${height}">
+              <circle cx="35" cy="35" r="30" stroke="${color}" stroke-width="5" fill="none">
+                <animate attributeName="stroke-dasharray" from="0 188.5" to="188.5 0" dur="0.2s" fill="freeze" />
+              </circle>
+            </svg>`;
+}
+function generateCrossSVG() {
+    const color = '#FFC000';
+    const width = 70;
+    const height = 70;
+    const svgHtml = `
+      <svg width="${width}" height="${height}">
+        <line x1="0" y1="0" x2="${width}" y2="${height}"
+          stroke="${color}" stroke-width="5">
+          <animate attributeName="x2" values="0; ${width}" dur="200ms" />
+          <animate attributeName="y2" values="0; ${height}" dur="200ms" />
+        </line>
+        <line x1="${width}" y1="0" x2="0" y2="${height}"
+          stroke="${color}" stroke-width="5">
+          <animate attributeName="x2" values="${width}; 0" dur="200ms" />
+          <animate attributeName="y2" values="0; ${height}" dur="200ms" />
+        </line>
+      </svg>
+    `;
+    return svgHtml;
+}
+function drawWinningLine(combination) {
+    const lineColor = '#ffffff';
+    const lineWidth = 5;
+  
+    const startCell = document.querySelectorAll(`td`)[combination[0]];
+    const endCell = document.querySelectorAll(`td`)[combination[2]];
+    const startRect = startCell.getBoundingClientRect();
+    const endRect = endCell.getBoundingClientRect();
+  
+    const contentRect = document.getElementById('content').getBoundingClientRect();
+  
+    const lineLength = Math.sqrt(
+      Math.pow(endRect.left - startRect.left, 2) + Math.pow(endRect.top - startRect.top, 2)
+    );
+    const lineAngle = Math.atan2(endRect.top - startRect.top, endRect.left - startRect.left);
+  
+    const line = document.createElement('div');
+    line.style.position = 'absolute';
+    line.style.width = `${lineLength}px`;
+    line.style.height = `${lineWidth}px`;
+    line.style.backgroundColor = lineColor;
+    line.style.top = `${startRect.top + startRect.height / 2 - lineWidth / 2 - contentRect.top}px`;
+    line.style.left = `${startRect.left + startRect.width / 2 - contentRect.left}px`;
+    line.style.transform = `rotate(${lineAngle}rad)`;
+    line.style.transformOrigin = `top left`;
+    document.getElementById('content').appendChild(line);
+  }
